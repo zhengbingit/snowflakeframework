@@ -47,7 +47,7 @@ public final class AopHelper {
 
 
     /**
-     * 获取 Aspect 注解中设置的注解类
+     * 获取 Aspect 注解中设置的注解类，即，被代理的目标类
      * @param aspect
      * @return
      * @throws Exception

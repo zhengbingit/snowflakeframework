@@ -94,6 +94,12 @@ public class DatabaseHelper {
         return entity;
     }
 
+    /**
+     * 可用于联表查询
+     * @param sql
+     * @param params
+     * @return
+     */
     public static List<Map<String, Object>> executeQuery(String sql, Object... params) {
         List<Map<String, Object>> result = null;
         try {

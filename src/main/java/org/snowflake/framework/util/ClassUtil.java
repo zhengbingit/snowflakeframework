@@ -138,7 +138,6 @@ public final class ClassUtil {
      * @param className
      */
     private static void doAddClass(Set<Class<?>> classSet, String className) {
-        System.out.println("doAddClass, className = " + className);
         Class<?> cls = loadClass(className, false);
         classSet.add(cls);
     }

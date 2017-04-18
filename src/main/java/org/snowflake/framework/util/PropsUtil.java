@@ -3,9 +3,7 @@ package org.snowflake.framework.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 
 /**
@@ -62,6 +60,18 @@ public final class PropsUtil {
     }
 
     /**
+     * 设定字符串型
+     * @return
+     */
+    public static boolean setString(Properties properties, String key, String value) {
+        if (properties.containsKey(key)) {
+            properties.setProperty(key, value);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 获取数值型属性（默认值为0）
      */
     public static int getInt(Properties properties, String key) {
@@ -73,10 +83,18 @@ public final class PropsUtil {
      */
     public static int getInt(Properties properties, String key, int defaultValue) {
         int value = defaultValue;
-        if (properties.contains(key)) {
+        if (properties.containsKey(key)) {
             value = CastUtil.castInt(properties.getProperty(key));
         }
         return value;
+    }
+
+    public static boolean setInt(Properties properties, String key, int value) {
+        if (properties.containsKey(key)) {
+            properties.setProperty(key, String.valueOf(value));
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -91,9 +109,25 @@ public final class PropsUtil {
      */
     public static boolean getBoolean(Properties properties, String key, boolean defaultValue) {
         boolean value = defaultValue;
-        if (properties.contains(key)) {
+        if (properties.containsKey(key)) {
             value = CastUtil.castBoolean(properties.getProperty(key));
         }
         return value;
+    }
+
+    /**
+     * 保存对配置文件的修改
+     * @param fileName
+     * @param properties
+     */
+    public static void save(String fileName, Properties properties) {
+        String path = Thread.currentThread().getContextClassLoader().getResource(fileName).getPath();
+        try {
+            FileOutputStream outputStream = new FileOutputStream(path);
+            properties.store(outputStream, "");
+            outputStream.close();
+        } catch (Exception e) {
+            LOGGER.error("Properties save failure, {}", e);
+        }
     }
 }

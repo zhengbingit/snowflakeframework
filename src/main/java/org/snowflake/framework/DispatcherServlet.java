@@ -1,5 +1,8 @@
 package org.snowflake.framework;
 
+import org.dom4j.DocumentException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.snowflake.framework.bean.Data;
 import org.snowflake.framework.bean.Handler;
 import org.snowflake.framework.bean.Param;
@@ -19,8 +22,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +35,7 @@ import java.util.Map;
  */
 @WebServlet(urlPatterns = "/*", loadOnStartup = 0)
 public class DispatcherServlet extends HttpServlet{
+    private static Logger LOGGER = LoggerFactory.getLogger(DispatcherServlet.class);
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         // 初始化相关 Helper 类
@@ -46,6 +52,8 @@ public class DispatcherServlet extends HttpServlet{
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         ServletHelper.init(request, response);
         try{
             // 获取请求方法，如"get"或"post"
@@ -67,26 +75,35 @@ public class DispatcherServlet extends HttpServlet{
                     paramMap.put(paramName, paramValue);
                 }
                 String body = CodecUtil.decodeURL(StreamUtil.getString(request.getInputStream()));
+                // xml 数据包 Map 集合
+                Map<String, String> xmlParamsMap = null;
                 if (StringUtil.isNotEmpty(body)) {
-                    String[] params = StringUtil.splitString(body, "&");
-                    if (ArrayUtil.isNotEmpty(params)) {
-                        for (String param : params) {
-                            String[] array = StringUtil.splitString(param, "=");
-                            if (ArrayUtil.isNotEmpty(array) && array.length==2) {
-                                String paramName = array[0];
-                                String paramValue = array[1];
-                                paramMap.put(paramName, paramValue);
+                    // 判断 POST 请求是否为 xml 数据包
+                    if (body.endsWith("</xml>") && body.startsWith("<xml>")) {
+                        xmlParamsMap = XmlUtil.xmlToMap(body);
+                    }else {
+                        String[] params = StringUtil.splitString(body, "&");
+                        if (ArrayUtil.isNotEmpty(params)) {
+                            for (String param : params) {
+                                String[] array = StringUtil.splitString(param, "=");
+                                if (ArrayUtil.isNotEmpty(array) && array.length==2) {
+                                    String paramName = array[0];
+                                    String paramValue = array[1];
+                                    paramMap.put(paramName, paramValue);
+                                }
                             }
                         }
                     }
                 }
                 // 包装请求参数
                 Param param = new Param(paramMap);
+                param.setXmlParamMap(xmlParamsMap);
                 // 调用 Action 方法
                 Object result;
                 // 获取请求的方法
                 Method actionMethod = handler.getActionMethod();
                 // 获取请求的方法的参数列表
+
                 Class<?>[] parameterTypes = actionMethod.getParameterTypes();
                 // 优化 Action 参数，参数可以为空
                 if (parameterTypes.length == 0) {
@@ -107,6 +124,19 @@ public class DispatcherServlet extends HttpServlet{
                             for (Map.Entry<String, Object>entry : model.entrySet()) {
                                 request.setAttribute(entry.getKey(), entry.getValue());
                             }
+                            System.out.println(123123123);
+                            if (request == null) {
+                                System.out.println("request == null");
+                            }
+                            if (StringUtil.isEmpty(ConfigHelper.getAppJspPath())) {
+                                System.out.println("ConfigHelper.getAppJspPath() == null");
+                            }
+                            if (response == null) {
+                                System.out.println("response == null");
+                            }
+                            if (StringUtil.isEmpty(path)) {
+                                System.out.printf("path == null");
+                            }
                             request.getRequestDispatcher(ConfigHelper.getAppJspPath() + path).forward(request, response);
                         }
                     } else if (request instanceof Data) {
@@ -125,7 +155,10 @@ public class DispatcherServlet extends HttpServlet{
                     }
                 }
             }
-        }finally {
+        } catch (DocumentException e) {
+            LOGGER.error("DocumentException", e);
+            throw new RuntimeException(e);
+        } finally {
             ServletHelper.destroy();
         }
     }

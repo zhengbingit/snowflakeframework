@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class Param {
     private Map<String, Object> paramMap;
-
+    private Map<String, String> xmlParamMap;
     public Param(Map<String, Object> paramMap) {
         this.paramMap = paramMap;
     }
@@ -32,9 +32,29 @@ public class Param {
     }
 
     /**
+     * 设置 xmlParamMap 的值
+     * @param xmlParamMap
+     */
+    public void setXmlParamMap(Map<String, String> xmlParamMap) {
+        this.xmlParamMap = xmlParamMap;
+    }
+
+    /**
+     * 获取 xml 文件请求中的参数
+     * @return
+     */
+    public Map<String, String> getXmlParamMap() {
+        return xmlParamMap;
+    }
+
+    /**
      * 验证参数是否为空
      */
     public boolean isEmpty() {
         return CollectionUtil.isEmpty(paramMap);
+    }
+
+    public boolean isEmpytXmlParam() {
+        return CollectionUtil.isEmpty(xmlParamMap);
     }
 }
