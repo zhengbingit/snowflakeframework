@@ -1,15 +1,20 @@
 package org.snowflake.framework.helper;
 
+import com.mysql.jdbc.StringUtils;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.snowflake.framework.util.BeanUtil;
 import org.snowflake.framework.util.CollectionUtil;
 import org.snowflake.framework.util.PropsUtil;
+import org.snowflake.framework.util.StringUtil;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -36,7 +41,6 @@ public class DatabaseHelper {
 
     static {
         CONNECTION_THREAD_LOCAL = new ThreadLocal<Connection>();
-        QUERY_RUNNER = new QueryRunner();
 
         // 设置连接池，使用 DBCP 来获取数据库连接
         DATA_SOURCE = new BasicDataSource();
@@ -44,12 +48,14 @@ public class DatabaseHelper {
         DATA_SOURCE.setUrl(ConfigHelper.getJdbcUrl());
         DATA_SOURCE.setUsername(ConfigHelper.getJdbcUsername());
         DATA_SOURCE.setPassword(ConfigHelper.getJdbcPassword());
+
+        QUERY_RUNNER = new QueryRunner(DATA_SOURCE);
     }
 
     /**
      * 获取数据库连接
      */
-    public static Connection getConnection() {
+    private static Connection getConnection() {
         // 首先从 ThreadLocal 中获取
         Connection connection = CONNECTION_THREAD_LOCAL.get();
         // 若不存在，则创建一个新的 Connection，并最终将其放入 ThreadLocal 中
@@ -130,10 +136,18 @@ public class DatabaseHelper {
     /**
      * 插入实体
      */
-    public static <T> boolean insertEntity(Class<T> entityClass, Map<String, Object> fieldMap) {
+    public static <T> Long insertEntity(Object obj) {
+        Map<String, Object> fieldMap = BeanUtil.beanToMap(obj);
+        return insertEntity(obj.getClass(), fieldMap);
+    }
+
+    /**
+     * 插入实体
+     */
+    public static <T> Long insertEntity(Class<T> entityClass, Map<String, Object> fieldMap) {
         if (CollectionUtil.isEmpty(fieldMap)) {
             LOGGER.error("can not insert entity: fieldMap is empty");
-            return false;
+            return null;
         }
         String sql = "INSERT INTO " + getTableName(entityClass);
         StringBuilder colums = new StringBuilder("(");
@@ -147,10 +161,23 @@ public class DatabaseHelper {
         colums.replace(colums.lastIndexOf(", "), colums.length(), ")");
         values.replace(values.lastIndexOf(", "), values.length(), ")");
         sql += colums + " VALUES " + values;
-
         // 插入实体的值
         Object[] params = fieldMap.values().toArray();
-        return executeUpdate(sql, params) == 1;
+        Long result = null;
+        try {
+            result = QUERY_RUNNER.insert(sql, new ScalarHandler<Long>(), params);
+        } catch (SQLException e) {
+            LOGGER.error("insert failed : {}", e);
+        }
+        return result;
+    }
+
+    /**
+     * 更新实体
+     */
+    public static boolean updateEntity(long id, Object obj) {
+        Map<String, Object> fieldMap = BeanUtil.beanToMap(obj);
+        return updateEntity(obj.getClass(), id, fieldMap);
     }
 
     /**
@@ -166,7 +193,7 @@ public class DatabaseHelper {
         StringBuilder columns = new StringBuilder();
         // 更新实体的字段
         for (String colums : fieldMap.keySet()) {
-            columns.append(columns).append("=?, ");
+            columns.append(colums).append("=?, ");
         }
 
         // 去掉 SQL 最后一个 ', '
@@ -185,7 +212,7 @@ public class DatabaseHelper {
      * 删除实体
      */
     public static <T> boolean deleteEntity(Class<T> entityClass, long id) {
-        String sql = "DELTE FROM " + getTableName(entityClass) + "WHERE id=?";
+        String sql = "DELETE FROM " + getTableName(entityClass) + " WHERE id = ?";
         return executeUpdate(sql, id) == 1;
     }
 
@@ -193,7 +220,7 @@ public class DatabaseHelper {
      * 获取操作表的表名，即实体的类名
      */
     private static String getTableName(Class<?> entityClass) {
-        return entityClass.getSimpleName();
+        return StringUtil.lowerCase(entityClass.getSimpleName());
     }
 
     /**

@@ -30,4 +30,8 @@ public final class StringUtil {
     public static String[] splitString(String str, String c) {
         return StringUtils.split(str, c);
     }
+
+    public static String lowerCase(String str) {
+        return StringUtils.lowerCase(str);
+    }
 }
