@@ -62,6 +62,13 @@ public final class ConfigHelper {
     }
 
     /**
+     * 上传文件的大小限制，单位为 MB
+     * @return
+     */
+    public static int getAppUploadLimit() {
+        return PropsUtil.getInt(CONFIG_PROPS, ConfigConstant.APP_UPLOAD_LIMIT, 10);
+    }
+    /**
      * 获取指定key的值
      */
     private static String getStr(String str) {

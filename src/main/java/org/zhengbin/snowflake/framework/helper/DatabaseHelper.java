@@ -116,6 +116,7 @@ public class DatabaseHelper {
 
     /**
      * 执行更新语句（update、insert 和 delete）
+     * 通过 sql 语句中的 ? 占位符
      */
     public static int executeUpdate(String sql, Object... params) {
         int updateRows = 0;

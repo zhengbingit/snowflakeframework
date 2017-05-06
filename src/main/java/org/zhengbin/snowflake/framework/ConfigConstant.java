@@ -16,5 +16,5 @@ public interface ConfigConstant {
     String APP_JSP_PATH = "snowflake.framework.app.jsp_path";
     String APP_ASSET_PATH = "snowflake.framework.app.asset_path";
 
-    String URL_PATTERN = "snowflake.framework.app.url_pattern";
+    String APP_UPLOAD_LIMIT = "snowflake.framework.app.upload_limit";
 }

@@ -34,4 +34,9 @@ public final class StringUtil {
     public static String lowerCase(String str) {
         return StringUtils.lowerCase(str);
     }
+
+    /**
+     * 字符串分隔符
+     */
+    public static final String SEPARATOR = String.valueOf((char) 29);
 }
