@@ -27,7 +27,7 @@ public final class IocHelper {
                 // 获取 Bean 类定义的所有成员变量（简称 Bean Field）
                 Field[] beanFields = beanClass.getDeclaredFields();
                 if (ArrayUtil.isNotEmpty(beanFields)) {
-                    // 遍历 Bean Field
+                    // 遍历 ！所有的！ Bean Field（支持注入多个DAO、Service）
                     for (Field beanField : beanFields) {
                         // 判断当前 Bean Field 是否带有 Inject 注解
                         if (beanField.isAnnotationPresent(Inject.class)) {

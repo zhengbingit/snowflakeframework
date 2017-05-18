@@ -36,4 +36,12 @@ public class View {
     public Map<String, Object> getModel() {
         return model;
     }
+
+    @Override
+    public String toString() {
+        return "View{" +
+                "path='" + path + '\'' +
+                ", model=" + model +
+                '}';
+    }
 }

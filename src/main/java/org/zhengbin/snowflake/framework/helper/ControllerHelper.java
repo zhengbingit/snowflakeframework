@@ -1,5 +1,7 @@
 package org.zhengbin.snowflake.framework.helper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zhengbin.snowflake.framework.annotation.Action;
 import org.zhengbin.snowflake.framework.bean.Handler;
 import org.zhengbin.snowflake.framework.bean.Request;
@@ -16,6 +18,7 @@ import java.util.Set;
  * Created by zhengbinMac on 2017/3/28.
  */
 public final class ControllerHelper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ControllerHelper.class);
     /**
      * 用于存放请求与处理器的映射关系（简称 Action Map）
      */
@@ -38,7 +41,8 @@ public final class ControllerHelper {
                             // 获取请求类型和路径
                             String mapping = action.value();
                             // 验证 URL 映射规则
-                            if (mapping.matches("\\w+:/\\w*")) {
+//                            if (mapping.matches("\\w+:/\\w*")) {
+                            if (mapping.matches(".*:/.*")) { // 修改正则规则，path 中包含 ':/' 即可
                                 String[] array = mapping.split(":");
                                 if (ArrayUtil.isNotEmpty(array) && array.length==2) {
                                     String requestMethod = array[0];
@@ -48,6 +52,8 @@ public final class ControllerHelper {
                                     // 存入 ACTION_MAP 中
                                     ACTION_MAP.put(request, handler);
                                 }
+                            } else {
+                                LOGGER.error("mapping error, mapping = {}", mapping);
                             }
                         }
                     }

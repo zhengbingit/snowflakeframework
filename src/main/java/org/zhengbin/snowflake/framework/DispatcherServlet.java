@@ -35,20 +35,30 @@ public class DispatcherServlet extends HttpServlet{
         HelperLoader.init();
         // 获取 ServletContext 对象（用于注册 Servlet ）
         ServletContext servletContext = servletConfig.getServletContext();
+
+        registerServlet(servletContext);
+
+        UploadHelper.init(servletContext);
+    }
+
+    private void registerServlet(ServletContext servletContext) {
         // 注册处理 JSP 的 Servlet
         ServletRegistration jspServlet = servletContext.getServletRegistration("jsp");
+        jspServlet.addMapping("/index.jsp");
         jspServlet.addMapping(ConfigHelper.getAppJspPath() + "*");
         // 注册处理静态资源的默认 Servlet
         ServletRegistration defaultServlet = servletContext.getServletRegistration("default");
+        defaultServlet.addMapping("/favicon.ico");
         defaultServlet.addMapping(ConfigHelper.getAppAssetPath() + "*");
-
         // 忽略对所有 html 开头的请求
         defaultServlet.addMapping("/html/*");
+        // 后端框架
+        defaultServlet.addMapping("/back-html/*");
+        defaultServlet.addMapping("/vendors/*");
+        defaultServlet.addMapping("/build/*");
         defaultServlet.addMapping("/css/*");
         defaultServlet.addMapping("/img/*");
         defaultServlet.addMapping("/js/*");
-
-        UploadHelper.init(servletContext);
     }
 
     @Override
@@ -90,6 +100,7 @@ public class DispatcherServlet extends HttpServlet{
              * 包装返回结果，View 或 Data
              */
             if (result instanceof View) {
+                LOGGER.debug("返回View 对象 view = {}", result);
                 handleViewResult((View) result, request, response);
             } else if (result instanceof Data) {
                 handleDataResult((Data) result, response);
@@ -118,6 +129,7 @@ public class DispatcherServlet extends HttpServlet{
                 for(Map.Entry<String, Object> entry : model.entrySet()) {
                     request.setAttribute(entry.getKey(), entry.getValue());
                 }
+                LOGGER.debug("转发路径 = {}", ConfigHelper.getAppJspPath() + path);
                 request.getRequestDispatcher(ConfigHelper.getAppJspPath() + path).forward(request, response);
             }
         }

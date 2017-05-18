@@ -1,11 +1,15 @@
 package org.zhengbin.snowflake.framework.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * JSON 工具类
@@ -15,6 +19,17 @@ public final class JsonUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtil.class);
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    public static Map jsonToMap(String json) {
+        Map resultMap = null;
+        try {
+            resultMap = OBJECT_MAPPER.readValue(json, Map.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOGGER.error("JsonUtil error : {}", e);
+        }
+        return resultMap;
+    }
 
     public static <T> String toJson(T obj) {
         String json;
@@ -36,5 +51,19 @@ public final class JsonUtil {
             throw new RuntimeException(e);
         }
         return pojo;
+    }
+
+    public static <T> List<T> fromJson2List(String json, Class<T> type) {
+        JavaType javaType = getCollectionType(ArrayList.class, type);
+        try {
+            return OBJECT_MAPPER.readValue(json, javaType);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static JavaType getCollectionType(Class<?> collectionClass, Class<?>... elementClasses) {
+        return OBJECT_MAPPER.getTypeFactory().constructParametricType(collectionClass, elementClasses);
     }
 }

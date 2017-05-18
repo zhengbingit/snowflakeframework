@@ -16,6 +16,7 @@ import java.util.*;
  * Created by zhengbinMac on 2017/4/5.
  */
 public final class AopHelper {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AopHelper.class);
 
     static {

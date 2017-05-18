@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
  */
 public final class TransactionProxy implements Proxy{
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionProxy.class);
+
     private static final ThreadLocal<Boolean> FLAG_HOLDER = new ThreadLocal<Boolean>(){
         @Override
         protected Boolean initialValue() {

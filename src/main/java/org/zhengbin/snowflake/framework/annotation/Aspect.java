@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Aspect {
     /**
-     * 注解
+     * 注解，拦截哪些含有某个注解的类
      */
     Class<? extends Annotation> value();
 }

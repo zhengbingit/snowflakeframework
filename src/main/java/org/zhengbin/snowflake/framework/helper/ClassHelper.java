@@ -1,6 +1,7 @@
 package org.zhengbin.snowflake.framework.helper;
 
 import org.zhengbin.snowflake.framework.annotation.Controller;
+import org.zhengbin.snowflake.framework.annotation.Repository;
 import org.zhengbin.snowflake.framework.annotation.Service;
 import org.zhengbin.snowflake.framework.util.ClassUtil;
 
@@ -61,6 +62,20 @@ public final class ClassHelper {
     }
 
     /**
+     * 获取应用包名下的所有 Repository 类
+     * @return
+     */
+    public static Set<Class<?>> getRepositoryClassSet() {
+        Set<Class<?>> classSet = new HashSet<Class<?>>();
+        for (Class<?> cls : CLASS_SET) {
+            if (cls.isAnnotationPresent(Repository.class)) {
+                classSet.add(cls);
+            }
+        }
+        return classSet;
+    }
+
+    /**
      * 获取应用包下所有 Bean 类（包括Service和Controller）
      * @return
      */
@@ -68,6 +83,7 @@ public final class ClassHelper {
         Set<Class<?>> beanClassSet = new HashSet<Class<?>>();
         beanClassSet.addAll(getServiceClassSet());
         beanClassSet.addAll(getControllerClassSet());
+        beanClassSet.addAll(getRepositoryClassSet());
         return beanClassSet;
     }
 
