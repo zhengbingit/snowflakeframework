@@ -3,6 +3,7 @@ package org.zhengbin.snowflake.framework.helper;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.*;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zhengbin.snowflake.framework.util.BeanUtil;
@@ -339,7 +340,8 @@ public class DatabaseHelper {
      * 获取操作表的表名，即实体的类名
      */
     private static String getTableName(Class<?> entityClass) {
-        return StringUtil.lowerCase(entityClass.getSimpleName());
+        String tableName = entityClass.getSimpleName();
+        return StringUtil.lowerCase(tableName);
     }
 
     /**
